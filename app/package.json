@@ -1,6 +1,6 @@
 {
-  "name": "tools-snap-service",
-  "description": "Node.js web service interface to puppeteer/chrome for generating PDFs and PNGs from HTML.",
+  "name": "tools-extract-service",
+  "description": "Node.js web service interface to puppeteer/chrome for extracting data in HTML.",
   "version": "4.1.6",
   "private": true,
   "scripts": {

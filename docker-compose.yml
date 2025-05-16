@@ -1,5 +1,5 @@
 services:
-  snap:
+  extract:
     build:
       context: .
     hostname: ${PREFIX}-${STAGE}-print
