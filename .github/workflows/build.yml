@@ -7,8 +7,7 @@ on:
       - main
       - OPS-*
       - ops-*
-      - SNAP-*
-      - snap-*
+      - feature/*
   release:
     types: [published]
 
@@ -30,7 +29,7 @@ jobs:
         aws_secret_access_key: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
         docker_registry_url: public.ecr.aws
         docker_registry_path: /unocha/
-        docker_image: tools-snap-service
+        docker_image: tools-extract-service
         docker_file: Dockerfile
         docker_username: ${{ secrets.ECR_AWS_ACCESS_KEY_ID }}
         docker_password: ${{ secrets.ECR_AWS_SECRET_ACCESS_KEY }}
