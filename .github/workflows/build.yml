@@ -5,10 +5,7 @@ on:
     branches:
       - develop
       - main
-      - OPS-*
-      - ops-*
-      - EXTRACT-*
-      - extract-*
+      - feature/*
   release:
     types: [published]
 
