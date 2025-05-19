@@ -14,7 +14,7 @@ FROM public.ecr.aws/unocha/debian-snap-base:22-debian
 
 # Configure the service container.
 ENV NODE_APP_DIR=/srv/www \
-    PORT=8442 \
+    PORT=8448 \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN \
