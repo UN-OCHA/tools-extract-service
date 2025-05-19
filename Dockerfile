@@ -14,16 +14,17 @@ FROM public.ecr.aws/unocha/debian-snap-base:22-debian
 
 # Configure the service container.
 ENV NODE_APP_DIR=/srv/www \
-    PORT=8442
+    PORT=8442 \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 RUN \
     # Install Chrome, so it can match. The base image already has the repo.
     apt-get update && \
     apt-get -qy dist-upgrade && \
     # For x86_64
-    apt-get -qy install --no-install-recommends google-chrome-stable && \
-    # For aarch64
-    # apt-get -qy install --no-install-recommends chromium && \
+    # apt-get -qy install --no-install-recommends google-chrome-stable && \
+    # For aarch64 *and* x86_64
+    apt-get -qy install --no-install-recommends chromium && \
     # Ok, cleanup!
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
