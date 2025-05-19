@@ -4,7 +4,7 @@
 | :------- |
 | Everyone |
 
-This file contains some instructions for installing, developing for, and preparing releases for the Shared Snap Service. Each section is marked with an Audience to help you decide whether the docs are for your current task.
+This file contains some instructions for installing, developing for, and preparing releases for the Shared extract Service. Each section is marked with an Audience to help you decide whether the docs are for your current task.
 
 
 ## Install / Develop locally
@@ -24,14 +24,14 @@ docker-compose build
 docker-compose up
 ```
 
-Now you can `POST` to `localhost:8442/snap` and it should return Snaps to you. There's also a `/status` route for pingdom that you can `GET` in order to quickly confirm it's up and running and not at its concurreny limit:
+Now you can `POST` to `localhost:8442/extract` and it should return extracts to you. There's also a `/status` route for pingdom that you can `GET` in order to quickly confirm it's up and running and not at its concurreny limit:
 
 ```sh
-# Ping the service to confirm server is running. HTTP 200 is success, the response body shows the number of in-flight snap requests.
+# Ping the service to confirm server is running. HTTP 200 is success, the response body shows the number of in-flight extract requests.
 curl -X GET http://localhost:8442/status
 
-# Snap a PDF of example.com and save to tmp.pdf
-curl -X POST 'http://localhost:8442/snap?url=https://example.com&service=test' > tmp.pdf
+# Extract a PDF of example.com and save to tmp.pdf
+curl -X POST 'http://localhost:8442/extract?url=https://example.com&service=test'
 ```
 
 It will probably be necessary to use an app that helps you formulate and store common queries you want to test. Command line tools like `curl` are perfectly capable, but if you want something more visual try [Insomnia](https://insomnia.rest/). It lets you configure everything and save each query for repeated use.
@@ -43,7 +43,7 @@ Travis will lint the codebase on every PR, but you can run it locally ahead of t
 
 ```sh
 # Lint the codebase
-docker-compose exec snap npm run lint
+docker-compose exec extract npm run lint
 ```
 
 
@@ -63,7 +63,7 @@ Right now, the process requires manual verification by a human. Please follow th
 
 ### 1. Check Chromium version
 
-Whenever you build a new Docker image for Snap, the version of Chromium is dynamically fetched from Google servers. You can do this at any time on your local machine by running the following command from the repo root:
+Whenever you build a new Docker image for extract, the version of Chromium is dynamically fetched from Google servers. You can do this at any time on your local machine by running the following command from the repo root:
 
 ```sh
 docker-compose build --no-cache
@@ -71,7 +71,7 @@ docker-compose build --no-cache
 
 Watch the console output and note the STABLE version of Chrome as the logs stream by. It can help to highlight the whole log block and once you see it, copy the text as quickly as you can. There might be a smarter way to do this, but copying logs is reliable enough. Example of the log you're looking for:
 
-![SNAP logs](https://user-images.githubusercontent.com/254753/120500125-e64ee780-c3c0-11eb-8e23-0603c1c733ef.png)
+![extract logs](https://user-images.githubusercontent.com/254753/120500125-e64ee780-c3c0-11eb-8e23-0603c1c733ef.png)
 
 ### 2. Check Puppeteer version
 
@@ -82,32 +82,28 @@ Once you have the stable version of Chromium identified, visit https://pptr.dev/
 
 ### 3. Update dependencies
 
-Once the Puppeteer version is noted, go and manually update `app/package.json`inside the Snap repo to ensure Puppeteer will have the correct version installed, then run one the following commands to ensure the codebase is fully updated and working like normal:
+Once the Puppeteer version is noted, go and manually update `app/package.json` inside the repo to ensure Puppeteer will have the correct version installed, then run one the following commands to ensure the codebase is fully updated and working like normal:
 
 ```sh
-# Start Snap Service in case the container isn't running
+# Start extract Service in case the container isn't running
 docker-compose up
 
 # Use npm to install after having manually edited
 # app/package.json to the desired version of Puppeteer.
-docker-compose exec snap npm install
+docker-compose exec extract npm install
 
 # If you want to be really safe, restart the container.
-docker-compose restart snap
+docker-compose restart extract
 
-# Output the version of Puppeteer Snap is using.
-docker-compose exec snap npm ls puppeteer
+# Output the version of Puppeteer extract is using.
+docker-compose exec extract npm ls puppeteer
 ```
 
 **NOTE:** Nowadays, the breaking changes are listed under `puppeteer-core` in the repo's releases list. An example is `22.0.0` which took away `browser.createIncognitoBrowsercontext` and replaced with `browser.createBrowserContext` (same functionality).
 
 ### 4. Create commit message for CHANGELOG
 
-**Based on how the upgrades affect end users of Snap**, pick an appropriate [commit message](#commit-messages).
-
-For routine updates, a patch increment is all that's needed most of the time. However if puppeteer got a major version bump, it might be necessary to compare their release notes and see what breaking changes are involved. Occasionally they affect how Snap behaves, and we might need to coordinate with teams to delay or provide guidance in order for them to upgrade. See [SNAP-87](https://humanitarian.atlassian.net/browse/SNAP-87) as an example of Puppeteer breaking changes which couldn't be remediated within Snap, that in turn affected an OCHA site.
-
-Conversely, for the example release depicted here, the 8.0.0 to 9.0.0 only involved one method which changed from async to sync. That doesn't affect our codebase at all because we don't use it, and if it did we would probably be able to make changes that don't affect the Snap users themselves. So the 9.0.0 breaking change does NOT warrant a major version bump on our side.
+**Based on how the upgrades affect end users of extract**, pick an appropriate [commit message](#commit-messages).
 
 Now you can run some local tests using either cURL (see installation section) or another tool of your choice, with [the API docs](README.md) as your guide to craft the requests.
 
@@ -129,7 +125,7 @@ Create a new branch from `dev` and run the release command to generate the new C
 # Example with the dry-run flag.
 $ npm run release -- --dry-run
 
-> tools-snap-service@3.0.0 release
+> tools-extract-service@3.0.0 release
 > standard-version "--dry-run"
 
 ✔ bumping version in package.json from 3.0.0 to 3.0.1
@@ -154,9 +150,9 @@ Review the commit and make any necessary adjustments to the CHANGELOG, using `gi
 
 Once the tagged Release has been created, [create a PR from `dev` to `master`][pr-dev-master] which will include all work within the tagged release. You can merge that without review as well. This step allows hotfixes to be created from `master` should the need arise.
 
-  [pr-dev-master]: https://github.com/UN-OCHA/tools-snap-service/compare/master...dev
-  [new-release]: https://github.com/UN-OCHA/tools-snap-service/releases/new?target=dev
-  [dev-package]: https://github.com/UN-OCHA/tools-snap-service/blob/dev/app/package.json#L4
+  [pr-dev-master]: https://github.com/UN-OCHA/tools-extract-service/compare/master...dev
+  [new-release]: https://github.com/UN-OCHA/tools-extract-service/releases/new?target=dev
+  [dev-package]: https://github.com/UN-OCHA/tools-extract-service/blob/dev/app/package.json#L4
 
 
 ## Commit messages
@@ -186,9 +182,9 @@ git cm -m "feat(pdf): add new param for PDF generation"
 # Outcome: new major version (5.0.0)
 git cm -m "fix!: remove legacy params from PDF generation
 
-Refs: SNAP-XXXX
+Refs: ABC-XXXX
 BREAKING CHANGE: we had some special cases which are no longer necessary now
-that all Snap sites are migrated to property X. Therefore we are removing our
+that all extract sites are migrated to property X. Therefore we are removing our
 deprecated PDF params."
 
 # Regularly scheduled Chromium/puppeteer upgrade
