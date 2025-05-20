@@ -9,16 +9,18 @@
  * service should be mediated by another application with access controls.
  */
 const async = require('async');
-const http = require('http');
-const express = require('express');
 const bodyParser = require('body-parser');
-const methodOverride = require('method-override');
-const { query, validationResult } = require('express-validator');
-const url = require('url');
-const { Semaphore } = require('await-semaphore');
-const puppeteer = require('puppeteer');
-const util = require('util');
+const express = require('express');
+const fs = require('fs');
+const http = require('http');
 const log = require('./log');
+const methodOverride = require('method-override');
+const path = require('path');
+const puppeteer = require('puppeteer');
+const { query, validationResult } = require('express-validator');
+const { Semaphore } = require('await-semaphore');
+const url = require('url');
+const util = require('util');
 
 const dump = util.inspect;
 
@@ -132,6 +134,7 @@ app.post('/extract', [
   query('selector', `Must be a CSS selector made of the following characters: ${allowedSelectorChars}`).optional().isWhitelisted(allowedSelectorChars),
   query('element', 'Element to extract').notEmpty(),
   query('attribute', 'Attribute to extract').notEmpty(),
+  query('file', 'Include the file as blob').optional().isInt(),
   query('width', 'Must be an integer with no units').optional().isInt(),
   query('height', 'Must be an integer with no units').optional().isInt(),
   query('user', 'Must be an alphanumeric string').optional().isAlphanumeric(),
@@ -179,6 +182,7 @@ app.post('/extract', [
   const fnSelector = req.query.selector || '';
   const fnElement = req.query.element || '';
   const fnAttribute = req.query.attribute || '';
+  const fnFile = req.query.file || false;
 
   const fnWidth = Number(req.query.width) || 800;
   const fnHeight = Number(req.query.height) || 600;
@@ -192,6 +196,8 @@ app.post('/extract', [
   const fnBlock = req.query.block || '';
 
   let pdfLink = '';
+  let pdfBlob = '';
+  let downloadPath = '';
 
   // Make a nice blob for the logs. ELK will sort this out. Blame Emma.
   const ip = ated(req);
@@ -275,6 +281,15 @@ app.post('/extract', [
               // Set viewport dimensions
               await page.setViewport({ width: fnWidth, height: fnHeight });
 
+              // Download needed.
+              if (fnFile) {
+                const client = await page.target().createCDPSession();
+                await client.send('Page.setDownloadBehavior', {
+                  behavior: 'allow',
+                  downloadPath: downloadPath
+                });
+              }
+
               // Compile cookies if present. We must manually specify some extra
               // info such as host/path in order to create a valid cookie.
               const cookies = [];
@@ -314,6 +329,36 @@ app.post('/extract', [
                 }, pdfElement, fnAttribute);
               }
               log.info(lgParams, `Extracted ${fnElement} from ${fnUrl} with attribute ${fnAttribute} and value ${pdfLink}`);
+
+              // Grab the file as a blob if requested.
+              if (fnFile) {
+                const fileName = path.basename(pdfLink);
+                const filePath = path.resolve(downloadPath, fileName);
+
+                if (!pdfLink.startsWith('http')) {
+                  // Use hostname from the URL.
+                  const urlObj = new URL(fnUrl);
+                  const hostname = urlObj.hostname;
+                  const port = urlObj.port ? `:${urlObj.port}` : '';
+                  const protocol = urlObj.protocol;
+                  const baseUrl = `${protocol}//${hostname}${port}`;
+                  pdfLink = `${baseUrl}${pdfLink}`;
+                }
+
+                try {
+                    // Download the file
+                    const response = await page.goto(pdfLink);
+                    fs.writeFileSync(filePath, await response.buffer());
+                    console.log(`Downloaded: ${fileName}`);
+
+                    // Read the file
+                    pdfBlob = fs.readFileSync(filePath);
+                    pdfBlob = Buffer.from(pdfBlob).toString('base64');
+                } catch (error) {
+                    console.error(`Failed to download from link: ${pdfLink}`, error);
+                }
+
+              }
             } catch (err) {
               log.error(err);
               throw err;
@@ -338,6 +383,7 @@ app.post('/extract', [
             element: fnElement,
             attribute: fnAttribute,
             pdf: pdfLink,
+            blob: pdfBlob,
           });
 
           const duration = ((Date.now() - startTime) / 1000);
