@@ -16,7 +16,9 @@ const http = require('http');
 const log = require('./log');
 const methodOverride = require('method-override');
 const path = require('path');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const puppeteerPrefs = require('puppeteer-extra-plugin-user-preferences');
+const puppeteerStealth = require('puppeteer-extra-plugin-stealth');
 const { query, validationResult } = require('express-validator');
 const { Semaphore } = require('await-semaphore');
 const url = require('url');
@@ -60,6 +62,19 @@ let browserWSEndpoint = '';
 
 async function connectPuppeteer() {
   let browser;
+  puppeteer.use(puppeteerStealth());
+  puppeteer.use(puppeteerPrefs({
+    userPrefs: {
+      download: {
+        prompt_for_download: false,
+        directory_upgrade: true,
+        extensions_to_open: 'applications/pdf',
+      },
+      plugins: {
+        always_open_pdf_externally: true,
+        plugins_disabled: ['Chrome PDF Viewer'],
+      },
+  }}));
 
   if (browserWSEndpoint) {
     browser = await puppeteer.connect({ browserWSEndpoint });
@@ -244,6 +259,11 @@ app.post('/extract', [
             const page = await context.newPage();
 
             try {
+              // Set the user agent.
+              await page.setUserAgent(
+                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+              );
+
               // Set duration until Timeout
               await page.setDefaultNavigationTimeout(60 * 1000);
 
@@ -279,7 +299,10 @@ app.post('/extract', [
               }
 
               // Set viewport dimensions
-              await page.setViewport({ width: fnWidth, height: fnHeight });
+              await page.setViewport({
+                width: Math.round(fnWidth + Math.random() * 100, 0),
+                height: Math.round(fnHeight + Math.random() * 100)
+              });
 
               // Download needed.
               if (fnFile) {
@@ -314,7 +337,7 @@ app.post('/extract', [
               });
 
               await page.goto(fnUrl, {
-                waitUntil: ['load', 'networkidle0'],
+                waitUntil: ['load'],
               });
 
               if (fnSelector) {
@@ -346,14 +369,29 @@ app.post('/extract', [
                 }
 
                 try {
-                    // Download the file
-                    const response = await page.goto(pdfLink);
-                    fs.writeFileSync(filePath, await response.buffer());
-                    console.log(`Downloaded: ${fileName}`);
+                    // Download the file.
+                    await fetch(pdfLink).then(response => response.blob())
+                      .then(blob => blob.arrayBuffer())
+                      .then(Buffer.from)
+                      .then((buf) => {
+                          fs.writeFileSync(filePath, buf);
+                          console.log('file written');
+                      });
+
+                    console.log(`Downloaded: ${fileName} from ${pdfLink} and saved to ${filePath}`);
 
                     // Read the file
                     pdfBlob = fs.readFileSync(filePath);
                     pdfBlob = Buffer.from(pdfBlob).toString('base64');
+
+                    // Remove the file.
+                    fs.unlink(filePath, (err) => {
+                      if (err) {
+                        log.error(err);
+                      } else {
+                        console.log(`Deleted: ${filePath}`);
+                      }
+                    });
                 } catch (error) {
                     console.error(`Failed to download from link: ${pdfLink}`, error);
                 }
@@ -364,7 +402,7 @@ app.post('/extract', [
               throw err;
             } finally {
               // Disconnect from Puppeteer process.
-              await context.close();
+              //await context.close();
               await browser.disconnect();
             }
           });
@@ -389,7 +427,7 @@ app.post('/extract', [
           const duration = ((Date.now() - startTime) / 1000);
           res.end();
           lgParams.duration = duration;
-          log.info(lgParams, `PNG successfully generated in ${duration} seconds.`);
+          log.info(lgParams, `All extracted in ${duration} seconds.`);
         }).catch((err) => cb(err));
       },
     ],
