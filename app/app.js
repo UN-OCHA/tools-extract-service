@@ -15,6 +15,7 @@ const fs = require('fs');
 const http = require('http');
 const log = require('./log');
 const methodOverride = require('method-override');
+const os = require('os');
 const path = require('path');
 const puppeteer = require('puppeteer-extra');
 const puppeteerPrefs = require('puppeteer-extra-plugin-user-preferences');
@@ -33,6 +34,7 @@ const dump = util.inspect;
 // The space at the beginning of this string is intentional.
 const allowedSelectorChars = ' #.[]()-_=+:~^*abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
+const sleep = ms => new Promise(res => setTimeout(res, ms));
 
 // Helper function.
 function ated(request) {
@@ -306,6 +308,7 @@ app.post('/extract', [
 
               // Download needed.
               if (fnFile) {
+                downloadPath = os.tmpdir();
                 const client = await page.target().createCDPSession();
                 await client.send('Page.setDownloadBehavior', {
                   behavior: 'allow',
@@ -345,17 +348,28 @@ app.post('/extract', [
                 await page.waitForSelector(fnSelector);
               }
 
+              if (fnDelay > 0) {
+                await sleep(fnDelay);
+              }
+
               let pdfElement = await page.$(fnElement);
               if (pdfElement) {
                 pdfLink = await page.evaluate((el, fnAttribute) => {
                   return el.getAttribute(fnAttribute);
                 }, pdfElement, fnAttribute);
               }
+              if (!pdfLink) {
+                throw new Error(`Element ${fnElement} with attribute ${fnAttribute} not found in ${fnUrl}`);
+              }
+
               log.info(lgParams, `Extracted ${fnElement} from ${fnUrl} with attribute ${fnAttribute} and value ${pdfLink}`);
 
               // Grab the file as a blob if requested.
               if (fnFile) {
-                const fileName = path.basename(pdfLink);
+                let fileName = path.basename(pdfLink);
+                if (!fileName) {
+                  fileName = `downloaded-${Date.now()}.pdf`;
+                }
                 const filePath = path.resolve(downloadPath, fileName);
 
                 if (!pdfLink.startsWith('http')) {
