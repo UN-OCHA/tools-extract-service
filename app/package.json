@@ -24,7 +24,10 @@
     "mime-types": "^2.1.35",
     "nodemon": "^3.1.10",
     "pm2": "^5.4.2",
-    "puppeteer": "^24.8.0"
+    "puppeteer": "^24.9.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "puppeteer-extra-plugin-user-preferences": "^2.4.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.1.0",
