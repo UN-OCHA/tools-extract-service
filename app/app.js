@@ -267,7 +267,7 @@ app.post('/extract', [
               );
 
               // Set duration until Timeout
-              await page.setDefaultNavigationTimeout(60 * 1000);
+              await page.setDefaultNavigationTimeout(10 * 1000);
 
               // We want to intercept requests to dump logs or block domains.
               if (fnDebug || fnBlock) {
@@ -339,6 +339,12 @@ app.post('/extract', [
                 });
               });
 
+              await page.goto(fnUrl, {
+                waitUntil: ['load'],
+              });
+
+              // Wait and reload.
+              await sleep(1000);
               await page.goto(fnUrl, {
                 waitUntil: ['load'],
               });
