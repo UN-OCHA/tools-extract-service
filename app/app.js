@@ -435,7 +435,7 @@ app.post('/extract', [
                       await sleep(666);
                     }
 
-                    // Check every 500ms until the download directory is not empty.
+                    // Check every 500ms.
                     await new Promise((resolve) => {
                       const checkFile = setInterval(() => {
                         if (!isEmptyDir(downloadPath)) {
