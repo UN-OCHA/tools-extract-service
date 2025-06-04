@@ -44,6 +44,41 @@ function ated(request) {
     || (request.connection.socket ? request.connection.socket.remoteAddress : null);
 }
 
+function isEmptyDir(path) {
+  fs.readdir(path, function(err, files) {
+    if (err) {
+      console.error(`Error reading directory ${path}:`, err);
+      return true;
+    } else {
+      if (!files.length) {
+        return true;
+      }
+    }
+
+    return false;
+  });
+}
+
+function isFile(fileName) {
+  return fs.lstatSync(fileName).isFile();
+};
+
+function getFile(dir) {
+  let files = fs.readdirSync(dir)
+    .map(fileName => {
+      return path.join(dir, fileName);
+    })
+    .filter(isFile);
+
+  if (files.length === 0) {
+    throw new Error(`No files found in ${dir}`);
+  }
+  if (files.length > 1) {
+    throw new Error(`Multiple files found in ${dir}. Expected only one.`);
+  }
+  return files[0];
+}
+
 /**
  * A semaphore to limit the maximum number of concurrent active requests to
  * puppeteer, and require that new requests wait until previous ones are
@@ -108,6 +143,7 @@ async function connectPuppeteer() {
 
 // Set up the Express app
 const app = express();
+const apiTimeout = 60 * 1000;
 
 app.set('env', process.env.NODE_ENV || 'dockerdev');
 app.set('port', process.env.PORT || 80);
@@ -126,6 +162,12 @@ app.use((err, req, res, next) => {
   if (process.env.NODE_ENV !== 'test') {
     log.error(`Error: ${JSON.stringify(err)}`);
   }
+
+  req.setTimeout(apiTimeout, () => {
+      let err = new Error('Request Timeout');
+      err.status = 408;
+      next(err);
+  });
 
   res.status(err.code || 500);
   res.send('Error');
@@ -149,7 +191,8 @@ app.get('/status', (req, res) => {
 app.post('/extract', [
   query('url', 'Must be a valid URL with protocol and no auth').notEmpty().isURL({ require_protocol: true, disallow_auth: true, validate_length: false }),
   query('selector', `Must be a CSS selector made of the following characters: ${allowedSelectorChars}`).optional().isWhitelisted(allowedSelectorChars),
-  query('element', 'Element to extract').notEmpty(),
+  query('element', 'Element to click').notEmpty(),
+  query('element2', 'Element 2 to click').optional(),
   query('attribute', 'Attribute to extract').notEmpty(),
   query('file', 'Include the file as blob').optional().isInt(),
   query('width', 'Must be an integer with no units').optional().isInt(),
@@ -198,6 +241,7 @@ app.post('/extract', [
   const fnUrl = req.query.url || false;
   const fnSelector = req.query.selector || '';
   const fnElement = req.query.element || '';
+  const fnElement2 = req.query.element2 || '';
   const fnAttribute = req.query.attribute || '';
   const fnFile = req.query.file || false;
 
@@ -222,6 +266,7 @@ app.post('/extract', [
     url: fnUrl,
     selector: fnSelector,
     element: fnElement,
+    element2: fnElement2,
     attribute: fnAttribute,
     authuser: fnAuthUser,
     authpass: (fnAuthPass ? '*****' : ''),
@@ -263,7 +308,7 @@ app.post('/extract', [
             try {
               // Set the user agent.
               await page.setUserAgent(
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36'
+                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
               );
 
               // Set duration until Timeout
@@ -308,7 +353,9 @@ app.post('/extract', [
 
               // Download needed.
               if (fnFile) {
-                downloadPath = os.tmpdir();
+                downloadPath = path.join(os.tmpdir(), startTime.toString());
+                // Create a unique download path.
+                fs.mkdirSync(downloadPath, { recursive: true });
                 const client = await page.target().createCDPSession();
                 await client.send('Page.setDownloadBehavior', {
                   behavior: 'allow',
@@ -364,43 +411,48 @@ app.post('/extract', [
                   return el.getAttribute(fnAttribute);
                 }, pdfElement, fnAttribute);
               }
-              if (!pdfLink) {
-                throw new Error(`Element ${fnElement} with attribute ${fnAttribute} not found in ${fnUrl}`);
-              }
-
-              log.info(lgParams, `Extracted ${fnElement} from ${fnUrl} with attribute ${fnAttribute} and value ${pdfLink}`);
 
               // Grab the file as a blob if requested.
               if (fnFile) {
+                if (fnElement2) {
+                  pdfElement = await page.$(fnElement2);
+                  if (pdfElement) {
+                    pdfLink = await page.evaluate((el, fnAttribute) => {
+                      return el.getAttribute(fnAttribute);
+                    }, pdfElement, fnAttribute);
+                  }
+                }
+
                 let fileName = path.basename(pdfLink);
                 if (!fileName) {
                   fileName = `downloaded-${Date.now()}.pdf`;
                 }
-                const filePath = path.resolve(downloadPath, fileName);
-
-                if (!pdfLink.startsWith('http')) {
-                  // Use hostname from the URL.
-                  const urlObj = new URL(fnUrl);
-                  const hostname = urlObj.hostname;
-                  const port = urlObj.port ? `:${urlObj.port}` : '';
-                  const protocol = urlObj.protocol;
-                  const baseUrl = `${protocol}//${hostname}${port}`;
-                  pdfLink = `${baseUrl}${pdfLink}`;
-                }
+                let filePath = path.resolve(downloadPath, fileName);
 
                 try {
-                    // Download the file.
-                    await fetch(pdfLink).then(response => response.blob())
-                      .then(blob => blob.arrayBuffer())
-                      .then(Buffer.from)
-                      .then((buf) => {
-                          fs.writeFileSync(filePath, buf);
-                          console.log('file written');
-                      });
+                    // Use puppeteer to download file.
+                    await sleep(444);
+                    await page.click(fnElement);
+                    await sleep(555);
 
-                    console.log(`Downloaded: ${fileName} from ${pdfLink} and saved to ${filePath}`);
+                    // Use second element if provided.
+                    if (fnElement2) {
+                      await page.waitForSelector(fnElement2);
+                      await page.click(fnElement2);
+                      await sleep(666);
+                    }
 
-                    // Read the file
+                    // Check every 500ms.
+                    await new Promise((resolve) => {
+                      const checkFile = setInterval(() => {
+                        if (!isEmptyDir(downloadPath)) {
+                          clearInterval(checkFile);
+                          resolve();
+                        }
+                      }, 500);
+                    });
+
+                    filePath = getFile(downloadPath);
                     pdfBlob = fs.readFileSync(filePath);
                     pdfBlob = Buffer.from(pdfBlob).toString('base64');
 
@@ -410,6 +462,7 @@ app.post('/extract', [
                         log.error(err);
                       } else {
                         console.log(`Deleted: ${filePath}`);
+                        fs.rmdirSync(downloadPath);
                       }
                     });
                 } catch (error) {
