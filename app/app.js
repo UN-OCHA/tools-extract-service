@@ -143,6 +143,7 @@ async function connectPuppeteer() {
 
 // Set up the Express app
 const app = express();
+const apiTimeout = 60 * 1000;
 
 app.set('env', process.env.NODE_ENV || 'dockerdev');
 app.set('port', process.env.PORT || 80);
@@ -161,6 +162,12 @@ app.use((err, req, res, next) => {
   if (process.env.NODE_ENV !== 'test') {
     log.error(`Error: ${JSON.stringify(err)}`);
   }
+
+  req.setTimeout(apiTimeout, () => {
+      let err = new Error('Request Timeout');
+      err.status = 408;
+      next(err);
+  });
 
   res.status(err.code || 500);
   res.send('Error');
