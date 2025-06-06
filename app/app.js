@@ -363,6 +363,11 @@ app.post('/extract', [
                 });
               }
 
+              // Set custom requests headers.
+              await page.setExtraHTTPHeaders({
+                'X-Bot': 'Honest guv, we are not!'
+              });
+
               // Compile cookies if present. We must manually specify some extra
               // info such as host/path in order to create a valid cookie.
               const cookies = [];
