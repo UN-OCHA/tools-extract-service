@@ -307,9 +307,8 @@ app.post('/extract', [
 
             try {
               // Set the user agent.
-              await page.setUserAgent(
-                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36'
-              );
+              const userAgent = process.env.USER_AGENT || 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36';
+              await page.setUserAgent(userAgent);
 
               // Set duration until Timeout
               await page.setDefaultNavigationTimeout(10 * 1000);
