@@ -200,7 +200,7 @@ app.post('/extract', [
   query('user', 'Must be an alphanumeric string').optional().isAlphanumeric(),
   query('pass', 'Must be an alphanumeric string').optional().isAlphanumeric(),
   query('service', 'Must be an alphanumeric string identifier (hyphens, underscores are also allowed).').matches(/^[A-Za-z0-9_-]+$/),
-  query('ua', '').optional(),
+  query('header', 'Custom header').optional(),
   query('delay', 'Must be an integer between 0-10000 inclusive.').optional().isInt({ min: 0, max: 10000 }),
   query('debug', 'Must be one of the following (case insensitive): true, false').optional().toLowerCase().isBoolean(),
 ], (req, res) => {
@@ -251,7 +251,7 @@ app.post('/extract', [
   const fnAuthPass = req.query.pass || '';
   const fnCookies = req.query.cookies || '';
   const fnService = req.query.service || '';
-  const fnUserAgent = req.query.ua || req.headers['user-agent'] || '';
+  const fnCustomHeader = req.query.header || '';
   const fnDelay = Number(req.query.delay) || 0;
   const fnDebug = Boolean(req.query.debug === 'true') || false;
   const fnBlock = req.query.block || '';
@@ -272,7 +272,7 @@ app.post('/extract', [
     authpass: (fnAuthPass ? '*****' : ''),
     cookies: fnCookies,
     service: fnService,
-    ua: fnUserAgent,
+    custom_header: fnCustomHeader,
     ip,
     delay: fnDelay,
     debug: '', // gets filled in as needed
@@ -309,6 +309,16 @@ app.post('/extract', [
               // Set the user agent.
               const userAgent = process.env.USER_AGENT || 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36';
               await page.setUserAgent(userAgent);
+
+              // Set custom headers if provided.
+              if (fnCustomHeader) {
+                const customHeaders = {};
+                fnCustomHeader.split(';').forEach((header) => {
+                  const [key, value] = header.split('=');
+                  customHeaders[key.trim()] = value.trim();
+                });
+                await page.setExtraHTTPHeaders(customHeaders);
+              }
 
               // Set duration until Timeout
               await page.setDefaultNavigationTimeout(10 * 1000);
