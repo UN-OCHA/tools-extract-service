@@ -22,6 +22,7 @@ const puppeteerPrefs = require('puppeteer-extra-plugin-user-preferences');
 const puppeteerStealth = require('puppeteer-extra-plugin-stealth');
 const { query, validationResult } = require('express-validator');
 const { Semaphore } = require('await-semaphore');
+const timers = require('node:timers/promises');
 const url = require('url');
 const util = require('util');
 
@@ -44,19 +45,26 @@ function ated(request) {
     || (request.connection.socket ? request.connection.socket.remoteAddress : null);
 }
 
-function isEmptyDir(path) {
-  fs.readdir(path, function(err, files) {
-    if (err) {
-      console.error(`Error reading directory ${path}:`, err);
-      return true;
-    } else {
-      if (!files.length) {
-        return true;
+const isEmptyDir = async function(path, timeout = 10000, delay = 100) {
+  const tid = setTimeout(() => {
+    const msg = `Timeout of ${timeout} ms exceeded waiting for ${path}`;
+    throw Error(msg);
+  }, timeout);
+
+  for (;;) {
+    try {
+      files = fs.readdirSync(path);
+      if (files.length > 0) {
+        if (files[0].indexOf('crdownload') === -1) {
+          clearTimeout(tid);
+          return false;
+        }
       }
     }
+    catch (err) {}
 
-    return false;
-  });
+    await timers.setTimeout(delay);
+  }
 }
 
 function isFile(fileName) {
@@ -126,7 +134,7 @@ async function connectPuppeteer() {
         '--remote-debugging-address=0.0.0.0',
         '--no-sandbox',
       ],
-      headless: true,
+      headless: false,
       dumpio: false, // set to `true` for debugging
     });
 
@@ -480,18 +488,11 @@ app.post('/extract', [
                         await sleep(666);
                       }
 
-                      // Check every 500ms.
-                      await new Promise((resolve) => {
-                        const checkFile = setInterval(() => {
-                          if (!isEmptyDir(downloadPath)) {
-                            clearInterval(checkFile);
-                            resolve();
-                          }
-                        }, 2000);
-                      });
+                      // Wait for file to be downloaded.
+                      await isEmptyDir(downloadPath);
 
                       filePath = getFile(downloadPath);
-                      log.log(`File downloaded to: ${filePath}`);
+                      log.info(`File downloaded to: ${filePath}`);
                       pdfBlob = fs.readFileSync(filePath);
                       pdfBlob = Buffer.from(pdfBlob).toString('base64');
 
@@ -500,7 +501,7 @@ app.post('/extract', [
                         if (err) {
                           log.error(err);
                         } else {
-                          log.log(`Deleted: ${filePath}`);
+                          log.info(`Deleted: ${filePath}`);
                           fs.rmdirSync(downloadPath);
                         }
                       });
@@ -510,9 +511,7 @@ app.post('/extract', [
                   } catch (error) {
                       log.error(`Failed to download from link: ${pdfLink}`, error);
                   }
-              }
-
-
+                }
               }
             } catch (err) {
               log.error(err);
