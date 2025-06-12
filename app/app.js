@@ -240,10 +240,20 @@ app.post('/extract', [
   // Assign validated querystring params to variables and set defaults.
   const fnUrl = req.query.url || false;
   const fnSelector = req.query.selector || '';
-  const fnElement = req.query.element || '';
-  const fnElement2 = req.query.element2 || '';
   const fnAttribute = req.query.attribute || '';
   const fnFile = req.query.file || false;
+
+  // Element might be an array.
+  let el = [];
+  if (Array.isArray(req.query.element)) {
+    el = req.query.element;
+  }
+  // If it's not an array, make it one.
+  if (typeof el === 'string') {
+    el = [el];
+  }
+
+  const fnElement = el;
 
   const fnWidth = Number(req.query.width) || 800;
   const fnHeight = Number(req.query.height) || 600;
@@ -266,8 +276,8 @@ app.post('/extract', [
     url: fnUrl,
     selector: fnSelector,
     element: fnElement,
-    element2: fnElement2,
     attribute: fnAttribute,
+    file: fnFile,
     authuser: fnAuthUser,
     authpass: (fnAuthPass ? '*****' : ''),
     cookies: fnCookies,
@@ -414,69 +424,90 @@ app.post('/extract', [
                 await sleep(fnDelay);
               }
 
-              let pdfElement = await page.$(fnElement);
-              if (pdfElement) {
-                pdfLink = await page.evaluate((el, fnAttribute) => {
-                  return el.getAttribute(fnAttribute);
-                }, pdfElement, fnAttribute);
+              // Loop through the elements to click.
+              for (const element of fnElement) {
+                let el = element.trim();
+                // If element contains a pipe, split it.
+                let el2 = '';
+                if (element.indexOf('|') !== -1) {
+                  const parts = element.split('|');
+                  el = parts[1].trim();
+                  el2 = parts[0].trim();
+                }
+
+                let pdfElement = await page.$(element);
+                if (pdfElement) {
+                  pdfLink = await page.evaluate((el, fnAttribute) => {
+                    return el.getAttribute(fnAttribute);
+                  }, pdfElement, fnAttribute);
+                }
+
+                // If the element is not found, try next one.
+                if (!pdfElement || !pdfLink) {
+                  log.warn(`Element ${element} not found or does not have attribute ${fnAttribute}.`);
+                  continue;
+                }
+
+                // Grab the file as a blob if requested.
+                if (fnFile) {
+                  // Try the second one if specified.
+                  if (el2) {
+                    pdfElement = await page.$(el2);
+                    if (pdfElement) {
+                      pdfLink = await page.evaluate((el, fnAttribute) => {
+                        return el.getAttribute(fnAttribute);
+                      }, pdfElement, fnAttribute);
+                    }
+                  }
+
+                  let fileName = path.basename(pdfLink);
+                  if (!fileName) {
+                    fileName = `downloaded-${Date.now()}.pdf`;
+                  }
+                  let filePath = path.resolve(downloadPath, fileName);
+
+                  try {
+                      // Use puppeteer to download file.
+                      await sleep(444);
+                      await page.click(el);
+                      await sleep(555);
+
+                      // Use second element if provided.
+                      if (el2) {
+                        await page.waitForSelector(el2);
+                        await page.click(el2);
+                        await sleep(666);
+                      }
+
+                      // Check every 500ms.
+                      await new Promise((resolve) => {
+                        const checkFile = setInterval(() => {
+                          if (!isEmptyDir(downloadPath)) {
+                            clearInterval(checkFile);
+                            resolve();
+                          }
+                        }, 2000);
+                      });
+
+                      filePath = getFile(downloadPath);
+                      console.log(`File downloaded to: ${filePath}`);
+                      pdfBlob = fs.readFileSync(filePath);
+                      pdfBlob = Buffer.from(pdfBlob).toString('base64');
+
+                      // Remove the file.
+                      fs.unlink(filePath, (err) => {
+                        if (err) {
+                          log.error(err);
+                        } else {
+                          console.log(`Deleted: ${filePath}`);
+                          fs.rmdirSync(downloadPath);
+                        }
+                      });
+                  } catch (error) {
+                      console.error(`Failed to download from link: ${pdfLink}`, error);
+                  }
               }
 
-              // Grab the file as a blob if requested.
-              if (fnFile) {
-                if (fnElement2) {
-                  pdfElement = await page.$(fnElement2);
-                  if (pdfElement) {
-                    pdfLink = await page.evaluate((el, fnAttribute) => {
-                      return el.getAttribute(fnAttribute);
-                    }, pdfElement, fnAttribute);
-                  }
-                }
-
-                let fileName = path.basename(pdfLink);
-                if (!fileName) {
-                  fileName = `downloaded-${Date.now()}.pdf`;
-                }
-                let filePath = path.resolve(downloadPath, fileName);
-
-                try {
-                    // Use puppeteer to download file.
-                    await sleep(444);
-                    await page.click(fnElement);
-                    await sleep(555);
-
-                    // Use second element if provided.
-                    if (fnElement2) {
-                      await page.waitForSelector(fnElement2);
-                      await page.click(fnElement2);
-                      await sleep(666);
-                    }
-
-                    // Check every 500ms.
-                    await new Promise((resolve) => {
-                      const checkFile = setInterval(() => {
-                        if (!isEmptyDir(downloadPath)) {
-                          clearInterval(checkFile);
-                          resolve();
-                        }
-                      }, 500);
-                    });
-
-                    filePath = getFile(downloadPath);
-                    pdfBlob = fs.readFileSync(filePath);
-                    pdfBlob = Buffer.from(pdfBlob).toString('base64');
-
-                    // Remove the file.
-                    fs.unlink(filePath, (err) => {
-                      if (err) {
-                        log.error(err);
-                      } else {
-                        console.log(`Deleted: ${filePath}`);
-                        fs.rmdirSync(downloadPath);
-                      }
-                    });
-                } catch (error) {
-                    console.error(`Failed to download from link: ${pdfLink}`, error);
-                }
 
               }
             } catch (err) {
