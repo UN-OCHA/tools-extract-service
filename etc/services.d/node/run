@@ -12,4 +12,4 @@ echo "==> Installing npm dependencies"
 # npm install
 
 echo "==> Starting the server"
-# exec npm start
+xvfb-run --server-args="-screen 0 1024x768x24" npm start
