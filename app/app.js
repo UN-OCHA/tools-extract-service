@@ -426,6 +426,7 @@ app.post('/extract', [
 
               // Loop through the elements to click.
               for (const element of fnElement) {
+                log.info(`Processing element: ${element}`);
                 let el = element.trim();
                 // If element contains a pipe, split it.
                 let el2 = '';
@@ -435,7 +436,7 @@ app.post('/extract', [
                   el2 = parts[0].trim();
                 }
 
-                let pdfElement = await page.$(element);
+                let pdfElement = await page.$(el);
                 if (pdfElement) {
                   pdfLink = await page.evaluate((el, fnAttribute) => {
                     return el.getAttribute(fnAttribute);
@@ -444,7 +445,7 @@ app.post('/extract', [
 
                 // If the element is not found, try next one.
                 if (!pdfElement || !pdfLink) {
-                  log.warn(`Element ${element} not found or does not have attribute ${fnAttribute}.`);
+                  log.warn(`Element ${el} not found or does not have attribute ${fnAttribute}.`);
                   continue;
                 }
 
@@ -490,7 +491,7 @@ app.post('/extract', [
                       });
 
                       filePath = getFile(downloadPath);
-                      console.log(`File downloaded to: ${filePath}`);
+                      log.log(`File downloaded to: ${filePath}`);
                       pdfBlob = fs.readFileSync(filePath);
                       pdfBlob = Buffer.from(pdfBlob).toString('base64');
 
@@ -499,12 +500,15 @@ app.post('/extract', [
                         if (err) {
                           log.error(err);
                         } else {
-                          console.log(`Deleted: ${filePath}`);
+                          log.log(`Deleted: ${filePath}`);
                           fs.rmdirSync(downloadPath);
                         }
                       });
+
+                      // Exit the loop after downloading the first valid link.
+                      break;
                   } catch (error) {
-                      console.error(`Failed to download from link: ${pdfLink}`, error);
+                      log.error(`Failed to download from link: ${pdfLink}`, error);
                   }
               }
 
