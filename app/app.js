@@ -126,7 +126,7 @@ async function connectPuppeteer() {
         '--remote-debugging-address=0.0.0.0',
         '--no-sandbox',
       ],
-      headless: false,
+      headless: true,
       dumpio: false, // set to `true` for debugging
     });
 
