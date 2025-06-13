@@ -24,7 +24,7 @@ RUN \
     # For x86_64
     # apt-get -qy install --no-install-recommends google-chrome-stable && \
     # For aarch64 *and* x86_64
-    apt-get -qy install --no-install-recommends chromium coreutils xvfb && \
+    apt-get -qy install --no-install-recommends chromium && \
     # Ok, cleanup!
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \

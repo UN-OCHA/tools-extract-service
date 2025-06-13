@@ -134,7 +134,7 @@ async function connectPuppeteer() {
         '--remote-debugging-address=0.0.0.0',
         '--no-sandbox',
       ],
-      headless: false,
+      headless: true,
       dumpio: false, // set to `true` for debugging
     });
 
@@ -200,7 +200,7 @@ app.post('/extract', [
   query('url', 'Must be a valid URL with protocol and no auth').notEmpty().isURL({ require_protocol: true, disallow_auth: true, validate_length: false }),
   query('selector', `Must be a CSS selector made of the following characters: ${allowedSelectorChars}`).optional().isWhitelisted(allowedSelectorChars),
   query('element', 'Element to click').notEmpty(),
-  query('element2', 'Element 2 to click').optional(),
+  query('element2', 'Deprecated, element may be an array').optional(),
   query('attribute', 'Attribute to extract').notEmpty(),
   query('file', 'Include the file as blob').optional().isInt(),
   query('width', 'Must be an integer with no units').optional().isInt(),
@@ -478,13 +478,27 @@ app.post('/extract', [
                   try {
                       // Use puppeteer to download file.
                       await sleep(444);
-                      await page.click(el);
+                      await page.evaluate((el) => {
+                        const link = document.querySelector(el);
+                        if (link) {
+                          link.target = '';
+                          link.click();
+                          return link.href;
+                        }
+                      }, el);
                       await sleep(555);
 
                       // Use second element if provided.
                       if (el2) {
                         await page.waitForSelector(el2);
-                        await page.click(el2);
+                        await page.evaluate((el) => {
+                          const link = document.querySelector(el);
+                          if (link) {
+                            link.target = '';
+                            link.click();
+                            return link.href;
+                          }
+                        }, el2);
                         await sleep(666);
                       }
 
