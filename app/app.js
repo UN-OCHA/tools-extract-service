@@ -388,6 +388,7 @@ app.post('/extract', [
                   behavior: 'allow',
                   downloadPath: downloadPath
                 });
+                log.info(`Download directory created: ${downloadPath}`);
               }
 
               // Compile cookies if present. We must manually specify some extra
@@ -474,10 +475,12 @@ app.post('/extract', [
                     fileName = `downloaded-${Date.now()}.pdf`;
                   }
                   let filePath = path.resolve(downloadPath, fileName);
+                  log.info(`File will be saved as: ${filePath}`);
 
                   try {
                       // Use puppeteer to download file.
                       await sleep(444);
+                      log.info(`Will click on first element: ${el}`);
                       await page.evaluate((el) => {
                         const link = document.querySelector(el);
                         if (link) {
@@ -490,6 +493,7 @@ app.post('/extract', [
 
                       // Use second element if provided.
                       if (el2) {
+                        log.info(`Will click on second element: ${el2}`);
                         await page.waitForSelector(el2);
                         await page.evaluate((el) => {
                           const link = document.querySelector(el);
