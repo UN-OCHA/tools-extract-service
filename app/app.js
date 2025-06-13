@@ -276,6 +276,7 @@ app.post('/extract', [
 
   let pdfLink = '';
   let pdfBlob = '';
+  let screenshot = '';
   let downloadPath = '';
 
   // Make a nice blob for the logs. ELK will sort this out. Blame Emma.
@@ -491,6 +492,13 @@ app.post('/extract', [
                       }, el);
                       await sleep(555);
 
+                      // Make a screenshot of the page if requested.
+                      screenshot = await page.screenshot({
+                        encoding: 'base64',
+                        fullPage: true,
+                      });
+                      log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
+
                       // Use second element if provided.
                       if (el2) {
                         log.info(lgParams, `Will click on second element: ${el2}`);
@@ -561,6 +569,7 @@ app.post('/extract', [
             attribute: fnAttribute,
             pdf: pdfLink,
             blob: pdfBlob,
+            screenshot: screenshot,
           });
 
           const duration = ((Date.now() - startTime) / 1000);
