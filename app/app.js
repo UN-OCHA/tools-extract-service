@@ -509,20 +509,22 @@ app.post('/extract', [
                       // Wait for file to be downloaded.
                       await isEmptyDir(downloadPath);
 
-                      filePath = getFile(downloadPath);
-                      log.info(lgParams, `File downloaded to: ${filePath}`);
-                      pdfBlob = fs.readFileSync(filePath);
-                      pdfBlob = Buffer.from(pdfBlob).toString('base64');
-                      log.info(lgParams, `Blob size: ${pdfBlob.length}`);
+                      await new Promise((resolve, reject) => {
+                        filePath = getFile(downloadPath);
+                        log.info(lgParams, `File downloaded to: ${filePath}`);
+                        pdfBlob = fs.readFileSync(filePath);
+                        pdfBlob = Buffer.from(pdfBlob).toString('base64');
+                        log.info(lgParams, `Blob size: ${pdfBlob.length}`);
 
-                      // Remove the file.
-                      fs.unlink(filePath, (err) => {
-                        if (err) {
-                          log.error(lgParams, err);
-                        } else {
-                          log.info(lgParams, `Deleted: ${filePath}`);
-                          fs.rmdirSync(downloadPath);
-                        }
+                        // Remove the file.
+                        fs.unlink(filePath, (err) => {
+                          if (err) {
+                            log.error(lgParams, err);
+                          } else {
+                            log.info(lgParams, `Deleted: ${filePath}`);
+                            fs.rmdirSync(downloadPath);
+                          }
+                        });
                       });
 
                       // Exit the loop after downloading the first valid link.
