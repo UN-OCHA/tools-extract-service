@@ -525,6 +525,8 @@ app.post('/extract', [
                             fs.rmdirSync(downloadPath);
                           }
                         });
+
+                        resolve();
                       });
 
                       // Exit the loop after downloading the first valid link.
