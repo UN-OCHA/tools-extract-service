@@ -388,7 +388,7 @@ app.post('/extract', [
                   behavior: 'allow',
                   downloadPath: downloadPath
                 });
-                log.info(`Download directory created: ${downloadPath}`);
+                log.info(lgParams, `Download directory created: ${downloadPath}`);
               }
 
               // Compile cookies if present. We must manually specify some extra
@@ -435,7 +435,7 @@ app.post('/extract', [
 
               // Loop through the elements to click.
               for (const element of fnElement) {
-                log.info(`Processing element: ${element}`);
+                log.info(lgParams, `Processing element: ${element}`);
                 let el = element.trim();
                 // If element contains a pipe, split it.
                 let el2 = '';
@@ -454,7 +454,7 @@ app.post('/extract', [
 
                 // If the element is not found, try next one.
                 if (!pdfElement || !pdfLink) {
-                  log.warn(`Element ${el} not found or does not have attribute ${fnAttribute}.`);
+                  log.warn(lgParams, `Element ${el} not found or does not have attribute ${fnAttribute}.`);
                   continue;
                 }
 
@@ -475,12 +475,12 @@ app.post('/extract', [
                     fileName = `downloaded-${Date.now()}.pdf`;
                   }
                   let filePath = path.resolve(downloadPath, fileName);
-                  log.info(`File will be saved as: ${filePath}`);
+                  log.info(lgParams, `File will be saved as: ${filePath}`);
 
                   try {
                       // Use puppeteer to download file.
                       await sleep(444);
-                      log.info(`Will click on first element: ${el}`);
+                      log.info(lgParams, `Will click on first element: ${el}`);
                       await page.evaluate((el) => {
                         const link = document.querySelector(el);
                         if (link) {
@@ -493,7 +493,7 @@ app.post('/extract', [
 
                       // Use second element if provided.
                       if (el2) {
-                        log.info(`Will click on second element: ${el2}`);
+                        log.info(lgParams, `Will click on second element: ${el2}`);
                         await page.waitForSelector(el2);
                         await page.evaluate((el) => {
                           const link = document.querySelector(el);
@@ -510,16 +510,17 @@ app.post('/extract', [
                       await isEmptyDir(downloadPath);
 
                       filePath = getFile(downloadPath);
-                      log.info(`File downloaded to: ${filePath}`);
+                      log.info(lgParams, `File downloaded to: ${filePath}`);
                       pdfBlob = fs.readFileSync(filePath);
                       pdfBlob = Buffer.from(pdfBlob).toString('base64');
+                      log.info(lgParams, `Blob size: ${pdfBlob.length}`);
 
                       // Remove the file.
                       fs.unlink(filePath, (err) => {
                         if (err) {
-                          log.error(err);
+                          log.error(lgParams, err);
                         } else {
-                          log.info(`Deleted: ${filePath}`);
+                          log.info(lgParams, `Deleted: ${filePath}`);
                           fs.rmdirSync(downloadPath);
                         }
                       });
@@ -527,12 +528,12 @@ app.post('/extract', [
                       // Exit the loop after downloading the first valid link.
                       break;
                   } catch (error) {
-                      log.error(`Failed to download from link: ${pdfLink}`, error);
+                      log.error(lgParams, `Failed to download from link: ${pdfLink}`, error);
                   }
                 }
               }
             } catch (err) {
-              log.error(err);
+              log.error(lgParams, err);
               throw err;
             } finally {
               // Disconnect from Puppeteer process.
