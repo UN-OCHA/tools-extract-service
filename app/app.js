@@ -126,6 +126,7 @@ async function connectPuppeteer() {
   } else {
     // Initialize Puppeteer
     browser = await puppeteer.launch({
+      userDataDir: '/tmp/FakeChromeProfile',
       executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome',
       args: [
         '--disable-gpu',
