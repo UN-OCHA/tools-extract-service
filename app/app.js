@@ -550,7 +550,7 @@ app.post('/extract', [
               throw err;
             } finally {
               // Disconnect from Puppeteer process.
-              //await context.close();
+              await context.close();
               await browser.disconnect();
             }
           });
