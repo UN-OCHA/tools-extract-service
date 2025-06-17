@@ -541,7 +541,13 @@ app.post('/extract', [
                       // Exit the loop after downloading the first valid link.
                       break;
                   } catch (error) {
-                      log.error(lgParams, `Failed to download from link: ${pdfLink}`, error);
+                    log.error(lgParams, `Failed to download from link: ${pdfLink}`, error);
+                    // Try to remove the download directory. If it is not empty, this will fail, so log that.
+                    try {
+                      fs.rmdirSync(downloadPath);
+                    } catch (error) {
+                      log.error(lgParams, `Unable to remove download directory: ${downloadPath}`, error);
+                    }
                   }
                 }
               }
