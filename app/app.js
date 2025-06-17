@@ -555,8 +555,9 @@ app.post('/extract', [
               log.error(lgParams, err);
               throw err;
             } finally {
+              // Clean up!
+              await context.close();
               // Disconnect from Puppeteer process.
-              //await context.close();
               await browser.disconnect();
             }
           });
