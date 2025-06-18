@@ -277,6 +277,7 @@ app.post('/extract', [
   let pdfBlob = '';
   let screenshot = '';
   let downloadPath = '';
+  let logMessages = [];
 
   // Make a nice blob for the logs. ELK will sort this out. Blame Emma.
   const ip = ated(req);
@@ -396,6 +397,7 @@ app.post('/extract', [
                   downloadPath: downloadPath
                 });
                 log.info(lgParams, `Download directory created: ${downloadPath}`);
+                logMessages.push(`Download directory created: ${downloadPath}`);
               }
 
               // Compile cookies if present. We must manually specify some extra
@@ -422,10 +424,12 @@ app.post('/extract', [
               });
 
               log.info(lgParams, `Loading: ${fnUrl}`);
+              logMessages.push(`Loading: ${fnUrl}`);
               await page.goto(fnUrl, {
                 waitUntil: ['load'],
               });
               log.info(lgParams, `Page loaded`);
+              logMessages.push(`Page loaded`);
 
               // Make a screenshot of the page if requested.
               screenshot = await page.screenshot({
@@ -434,9 +438,11 @@ app.post('/extract', [
               });
               pdfBlob = screenshot;
               log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
+              logMessages.push(`Screenshot taken, size: ${screenshot.length} bytes`);
 
               if (fnSelector) {
                 log.info(lgParams, `Waiting for: ${fnSelector}`);
+                logMessages.push(`Waiting for: ${fnSelector}`);
                 await page.goto(fnUrl, {
                   waitUntil: ['load'],
                 });
@@ -447,12 +453,14 @@ app.post('/extract', [
 
               if (fnDelay > 0) {
                 log.info(lgParams, `Sleeping for: ${fnDelay}`);
+                logMessages.push(`Sleeping for: ${fnDelay}`);
                 await sleep(fnDelay);
               }
 
               // Loop through the elements to click.
               for (const element of fnElement) {
                 log.info(lgParams, `Processing element: ${element}`);
+                logMessages.push(`Processing element: ${element}`);
                 let el = element.trim();
                 // If element contains a pipe, split it.
                 let el2 = '';
@@ -493,11 +501,13 @@ app.post('/extract', [
                   }
                   let filePath = path.resolve(downloadPath, fileName);
                   log.info(lgParams, `File will be saved as: ${filePath}`);
+                  logMessages.push(`File will be saved as: ${filePath}`);
 
                   try {
                       // Use puppeteer to download file.
                       await sleep(444);
                       log.info(lgParams, `Will click on first element: ${el}`);
+                      logMessages.push(`Will click on first element: ${el}`);
                       await page.evaluate((el) => {
                         const link = document.querySelector(el);
                         if (link) {
@@ -514,10 +524,12 @@ app.post('/extract', [
                         fullPage: true,
                       });
                       log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
+                      logMessages.push(`Screenshot taken, size: ${screenshot.length} bytes`);
 
                       // Use second element if provided.
                       if (el2) {
                         log.info(lgParams, `Will click on second element: ${el2}`);
+                        logMessages.push(`Will click on second element: ${el2}`);
                         await page.waitForSelector(el2);
                         await page.evaluate((el) => {
                           const link = document.querySelector(el);
@@ -536,16 +548,20 @@ app.post('/extract', [
                       await new Promise((resolve, reject) => {
                         filePath = getFile(downloadPath);
                         log.info(lgParams, `File downloaded to: ${filePath}`);
+                        logMessages.push(`File downloaded to: ${filePath}`);
                         pdfBlob = fs.readFileSync(filePath);
                         pdfBlob = Buffer.from(pdfBlob).toString('base64');
                         log.info(lgParams, `Blob size: ${pdfBlob.length}`);
+                        logMessages.push(`Blob size: ${pdfBlob.length}`);
 
                         // Remove the file.
                         fs.unlink(filePath, (err) => {
                           if (err) {
                             log.error(lgParams, err);
+                            log.error(lgParams, err);
                           } else {
                             log.info(lgParams, `Deleted: ${filePath}`);
+                            logMessages.push(`Deleted: ${filePath}`);
                             fs.rmdirSync(downloadPath);
                           }
                         });
@@ -557,17 +573,20 @@ app.post('/extract', [
                       break;
                   } catch (error) {
                     log.error(lgParams, `Failed to download from link: ${pdfLink}`, error);
+                    log.error(lgParams, `Failed to download from link: ${pdfLink}`, error);
                     // Try to remove the download directory.
                     // If it is not empty, this will fail, so log that.
                     try {
                       fs.rmdirSync(downloadPath);
                     } catch (error) {
                       log.error(lgParams, `Unable to remove download directory: ${downloadPath}`, error);
+                      log.error(lgParams, `Unable to remove download directory: ${downloadPath}`, error);
                     }
                   }
                 }
               }
             } catch (err) {
+              log.error(lgParams, err);
               log.error(lgParams, err);
               throw err;
             } finally {
@@ -594,6 +613,7 @@ app.post('/extract', [
             pdf: pdfLink,
             blob: pdfBlob,
             screenshot: screenshot,
+            log: logMessages,
           });
 
           const duration = ((Date.now() - startTime) / 1000);
