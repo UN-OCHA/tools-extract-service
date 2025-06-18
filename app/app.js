@@ -370,7 +370,7 @@ app.post('/extract', [
                     && msg._args[0]
                     && msg._args[0]._remoteObject
                     && msg._args[0]._remoteObject.value;
-                  lgParams.debug += `${msg._type.padStart(7)} ${dump(errText)}\n`;
+                  lgParams.debug += `${dump(errText)}\n`;
                 });
               }
 
@@ -423,7 +423,7 @@ app.post('/extract', [
 
               log.info(lgParams, `Loading: ${fnUrl}`);
               await page.goto(fnUrl, {
-                waitUntil: ['networkidle0'],
+                waitUntil: ['load'],
               });
               log.info(lgParams, `Page loaded`);
 
