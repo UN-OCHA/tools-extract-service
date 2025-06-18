@@ -416,22 +416,23 @@ app.post('/extract', [
                 });
               });
 
-              await page.goto(fnUrl, {
-                waitUntil: ['load'],
-              });
-
-              // Wait and reload.
-              await sleep(1000);
+              log.info(lgParams, `Loading: ${fnUrl}`);
               await page.goto(fnUrl, {
                 waitUntil: ['load'],
               });
 
               if (fnSelector) {
+                log.info(lgParams, `Waiting for: ${fnSelector}`);
+                await page.goto(fnUrl, {
+                  waitUntil: ['load'],
+                });
+
                 // Make sure our selector is in the DOM.
                 await page.waitForSelector(fnSelector);
               }
 
               if (fnDelay > 0) {
+                log.info(lgParams, `Sleeping for: ${fnDelay}`);
                 await sleep(fnDelay);
               }
 
