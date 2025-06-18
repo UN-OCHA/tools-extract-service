@@ -219,10 +219,8 @@ app.post('/extract', [
   // Ensure a passed url is on the permitted list or includes a substring that
   // is on the permitted list.
   if (req.query.url) {
-    let urlHash;
-
     try {
-      urlHash = new URL(req.query.url);
+      let urlHash = new URL(req.query.url);
     } catch (err) {
       return res.status(400).json({
         errors: [
@@ -293,7 +291,7 @@ app.post('/extract', [
     cookies: fnCookies,
     service: fnService,
     custom_header: fnCustomHeader,
-    ip,
+    ip: ip,
     delay: fnDelay,
     debug: '', // gets filled in as needed
     block: fnBlock,
@@ -340,13 +338,20 @@ app.post('/extract', [
                 await page.setExtraHTTPHeaders(customHeaders);
               }
 
-              // Set duration until Timeout
+              // Set duration until Timeout.
               await page.setDefaultNavigationTimeout(30 * 1000);
 
-              // We want to intercept requests to dump logs or block domains.
-              if (fnDebug || fnBlock) {
-                await page.setRequestInterception(true);
-              }
+              // We want to intercept requests to block images and fonts.
+              await page.setRequestInterception(true);
+
+              page.on('request', (req) => {
+                if(req.resourceType() === 'image' || req.resourceType() === 'font'){
+                    req.abort();
+                }
+                else {
+                    req.continue();
+                }
+              });
 
               if (fnDebug) {
                 // Log caught exceptions
