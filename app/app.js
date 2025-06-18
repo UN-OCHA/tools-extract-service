@@ -427,6 +427,14 @@ app.post('/extract', [
               });
               log.info(lgParams, `Page loaded`);
 
+              // Make a screenshot of the page if requested.
+              screenshot = await page.screenshot({
+                encoding: 'base64',
+                fullPage: true,
+              });
+              pdfBlob = screenshot;
+              log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
+
               if (fnSelector) {
                 log.info(lgParams, `Waiting for: ${fnSelector}`);
                 await page.goto(fnUrl, {
