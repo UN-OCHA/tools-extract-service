@@ -204,6 +204,7 @@ app.post('/extract', [
   query('element2', 'Deprecated, element may be an array').optional(),
   query('attribute', 'Attribute to extract').notEmpty(),
   query('file', 'Include the file as blob').optional().isInt(),
+  query('screenshot', 'Include a screenshot as blob').optional().isInt(),
   query('width', 'Must be an integer with no units').optional().isInt(),
   query('height', 'Must be an integer with no units').optional().isInt(),
   query('user', 'Must be an alphanumeric string').optional().isAlphanumeric(),
@@ -249,6 +250,7 @@ app.post('/extract', [
   const fnSelector = req.query.selector || '';
   const fnAttribute = req.query.attribute || '';
   const fnFile = req.query.file || false;
+  const fnScreenshot = req.query.screenshot || false;
 
   // Element might be an array.
   let el = [];
@@ -270,7 +272,7 @@ app.post('/extract', [
   const fnService = req.query.service || '';
   const fnCustomHeader = req.query.header || '';
   const fnDelay = Number(req.query.delay) || 0;
-  const fnDebug = Boolean(req.query.debug === 'true') || true;
+  const fnDebug = Boolean(req.query.debug === 'true') || false;
   const fnBlock = req.query.block || '';
 
   let pdfLink = '';
@@ -435,13 +437,15 @@ app.post('/extract', [
               logMessages.push(`Page loaded`);
 
               // Make a screenshot of the page if requested.
-              screenshot = await page.screenshot({
-                encoding: 'base64',
-                fullPage: true,
-              });
-              pdfBlob = screenshot;
-              log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
-              logMessages.push(`Screenshot taken, size: ${screenshot.length} bytes`);
+              if (fnScreenshot) {
+                screenshot = await page.screenshot({
+                  encoding: 'base64',
+                  fullPage: true,
+                });
+                pdfBlob = screenshot;
+                log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
+                logMessages.push(`Screenshot taken, size: ${screenshot.length} bytes`);
+              }
 
               if (fnSelector) {
                 log.info(lgParams, `Waiting for: ${fnSelector}`);
@@ -533,12 +537,14 @@ app.post('/extract', [
                       await sleep(555);
 
                       // Make a screenshot of the page if requested.
-                      screenshot = await page.screenshot({
-                        encoding: 'base64',
-                        fullPage: true,
-                      });
-                      log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
-                      logMessages.push(`Screenshot taken, size: ${screenshot.length} bytes`);
+                      if (fnScreenshot) {
+                        screenshot = await page.screenshot({
+                          encoding: 'base64',
+                          fullPage: true,
+                        });
+                        log.info(lgParams, `Screenshot taken, size: ${screenshot.length} bytes`);
+                        logMessages.push(`Screenshot taken, size: ${screenshot.length} bytes`);
+                      }
 
                       // Use second element if provided.
                       if (el2) {
