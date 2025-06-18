@@ -270,7 +270,7 @@ app.post('/extract', [
   const fnService = req.query.service || '';
   const fnCustomHeader = req.query.header || '';
   const fnDelay = Number(req.query.delay) || 0;
-  const fnDebug = Boolean(req.query.debug === 'true') || false;
+  const fnDebug = Boolean(req.query.debug === 'true') || true;
   const fnBlock = req.query.block || '';
 
   let pdfLink = '';
