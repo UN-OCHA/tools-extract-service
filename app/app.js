@@ -357,12 +357,14 @@ app.post('/extract', [
               if (fnDebug) {
                 // Log caught exceptions
                 page.on('error', (err) => {
-                  lgParams.debug += err.toString();
+                  log.error(lgParams, err.toString());
+                  logMessages.push(err.toString());
                 });
 
                 // Log uncaught exceptions
                 page.on('pageerror', (err) => {
-                  lgParams.debug += err.toString();
+                  log.error(lgParams, err.toString());
+                  logMessages.push(err.toString());
                 });
 
                 // Forward all console output
@@ -371,7 +373,8 @@ app.post('/extract', [
                     && msg._args[0]
                     && msg._args[0]._remoteObject
                     && msg._args[0]._remoteObject.value;
-                  lgParams.debug += `${dump(errText)}\n`;
+                  log.error(lgParams, `${dump(errText)}\n`);
+                  logMessages.push(`${dump(errText)}\n`);
                 });
               }
 
@@ -450,14 +453,25 @@ app.post('/extract', [
                 // Make sure our selector is in the DOM.
                 await page.waitForSelector(fnSelector);
               }
+              else {
+                log.info(lgParams, 'No need to wait for selector');
+                logMessages.push('No need to wait for selector');
+              }
 
               if (fnDelay > 0) {
                 log.info(lgParams, `Sleeping for: ${fnDelay}`);
                 logMessages.push(`Sleeping for: ${fnDelay}`);
                 await sleep(fnDelay);
               }
+              else {
+                log.info(lgParams, 'No delay');
+                logMessages.push('No delay');
+              }
 
               // Loop through the elements to click.
+              log.info(lgParams, `Looping over ${fnElement.length} elements`);
+              logMessages.push(`Looping over ${fnElement.length} elements`);
+
               for (const element of fnElement) {
                 log.info(lgParams, `Processing element: ${element}`);
                 logMessages.push(`Processing element: ${element}`);
