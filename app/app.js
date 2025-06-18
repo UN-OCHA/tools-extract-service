@@ -423,8 +423,9 @@ app.post('/extract', [
 
               log.info(lgParams, `Loading: ${fnUrl}`);
               await page.goto(fnUrl, {
-                waitUntil: ['load'],
+                waitUntil: ['networkidle0'],
               });
+              log.info(lgParams, `Page loaded`);
 
               if (fnSelector) {
                 log.info(lgParams, `Waiting for: ${fnSelector}`);
