@@ -1,7 +1,7 @@
 {
   "name": "tools-extract-service",
   "description": "Node.js web service interface to puppeteer/chrome for extracting data in HTML.",
-  "version": "4.1.6",
+  "version": "1.3.3",
   "private": true,
   "scripts": {
     "start": "./node_modules/.bin/pm2 start app.js --no-daemon --watch --node-args='--max-http-header-size=16384'",
