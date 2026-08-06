@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.5.0](https://github.com/UN-OCHA/tools-extract-service/compare/v1.4.0...v1.5.0) (2026-08-06)
+
+
+### Features
+
+* Use federated auth for AWS services. ([5ecd766](https://github.com/UN-OCHA/tools-extract-service/commit/5ecd766e9dedf9983eaab7ef5818399922da3971))
+
+
+### Bug Fixes
+
+* **security:** Fix outstanding security issues via `audit fix`. ([ce8f6ba](https://github.com/UN-OCHA/tools-extract-service/commit/ce8f6ba0a3aa714a0f93de455dc5b052c6bd42dd))
+* **security:** Bump puppeteer to support the latest recommended chromium browser. ([99b8847](https://github.com/UN-OCHA/tools-extract-service/commit/99b8847673b9936dd6a90a4f77a189824504d470))
+
 ## [1.4.3](https://github.com/UN-OCHA/tools-extract-service/compare/v1.4.2...v1.4.3) (2026-07-01)
 
 ### Bug Fixes
