@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.2](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.0...v1.5.2) (2026-09-08)
+
+
+### Bug Fixes
+
+* **bug:** Chain the check for a url because express demands it now. ([1fc3eea](https://github.com/UN-OCHA/tools-extract-service/commit/1fc3eeaa217c6b5d98e83f19e78fdb80ad46a9b7))
+* **security:** Bump puppeteer to the current release. ([7385112](https://github.com/UN-OCHA/tools-extract-service/commit/73851121a853692d5ada03039d530f5e6d92517a))
+* **security:** Use npn audit fix to bump pakcages with fixes. ([58d7b63](https://github.com/UN-OCHA/tools-extract-service/commit/58d7b63fe7a614b3bfaffe22885566d90f27e1dd))
+
 ### [1.5.1](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.0...v1.5.1) (2026-09-08)
 
 
