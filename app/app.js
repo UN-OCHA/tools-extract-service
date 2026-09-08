@@ -219,7 +219,7 @@ app.post('/extract', [
 
   // Ensure a passed url is on the permitted list or includes a substring that
   // is on the permitted list.
-  if (req.query.url) {
+  if (req.query?.url) {
     try {
       let urlHash = new URL(req.query.url);
     } catch (err) {
