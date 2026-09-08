@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.1](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.0...v1.5.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **security:** Bump puppeteer to the current release. ([7385112](https://github.com/UN-OCHA/tools-extract-service/commit/73851121a853692d5ada03039d530f5e6d92517a))
+* **security:** Use npn audit fix to bump pakcages with fixes. ([58d7b63](https://github.com/UN-OCHA/tools-extract-service/commit/58d7b63fe7a614b3bfaffe22885566d90f27e1dd))
+* build(deps): bump js-yaml and pm2 in /app
+* build(deps): bump qs, body-parser and express in /app
+
 ## [1.5.0](https://github.com/UN-OCHA/tools-extract-service/compare/v1.4.0...v1.5.0) (2026-08-06)
 
 
