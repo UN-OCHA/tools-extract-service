@@ -23,7 +23,7 @@
     "method-override": "^3.0.0",
     "mime-types": "^2.1.35",
     "nodemon": "^3.1.10",
-    "pm2": "^7.0.1",
+    "pm2": "^7.0.4",
     "puppeteer": "^25.5.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
