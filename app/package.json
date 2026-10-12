@@ -1,7 +1,7 @@
 {
   "name": "tools-extract-service",
   "description": "Node.js web service interface to puppeteer/chrome for extracting data in HTML.",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "private": true,
   "scripts": {
     "start": "./node_modules/.bin/pm2 start app.js --no-daemon --watch --node-args='--max-http-header-size=16384'",
@@ -18,13 +18,14 @@
     "express": "^5.2.1",
     "express-validator": "^6.15.0",
     "glob": "^9.3.5",
-    "image-size": "^0.6.3",
+    "ip-address": "^10.7.4",
     "kind-of": "^6.0.3",
     "method-override": "^3.0.0",
     "mime-types": "^2.1.35",
+    "moment": "^2.31.0",
     "nodemon": "^3.1.10",
     "pm2": "^7.0.4",
-    "puppeteer": "^25.10.0",
+    "puppeteer": "^25.13.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "puppeteer-extra-plugin-user-preferences": "^2.4.1"
@@ -43,8 +44,8 @@
     }
   },
   "allowScripts": {
-    "puppeteer@25.10.0": true,
     "dtrace-provider@0.8.8": true,
-    "fsevents@2.3.3": true
+    "fsevents@2.3.3": true,
+    "puppeteer@25.13.0": true
   }
 }
