@@ -22,6 +22,7 @@
     "kind-of": "^6.0.3",
     "method-override": "^3.0.0",
     "mime-types": "^2.1.35",
+    "moment": "^2.31.0",
     "nodemon": "^3.1.10",
     "pm2": "^7.0.4",
     "puppeteer": "^25.13.0",
