@@ -19,6 +19,7 @@
     "express-validator": "^6.15.0",
     "glob": "^9.3.5",
     "image-size": "^0.6.3",
+    "ip-address": "^10.7.4",
     "kind-of": "^6.0.3",
     "method-override": "^3.0.0",
     "mime-types": "^2.1.35",
