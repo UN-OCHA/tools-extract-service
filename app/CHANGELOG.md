@@ -2,7 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
-### [1.5.2](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.0...v1.5.2) (2026-09-08)
+### [1.5.3](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.2...v1.5.3) (2026-10-12)
+
+
+### Bug Fixes
+
+* **security:** Bump puppeteer to the current release. ([7385112](https://github.com/UN-OCHA/tools-extract-service/commit/73851121a853692d5ada03039d530f5e6d92517a))
+* **security:** Bump image-size to v2.0.3. ([1fc810b](https://github.com/UN-OCHA/tools-extract-service/commit/1fc810b33a8ab15c2a6620ee8bb479368dae9b69))
+* **security:** Bump ip-address to v10.7.2. ([7209f9b](https://github.com/UN-OCHA/tools-extract-service/commit/7209f9b9c8160b908e9b51777729fbe249df0cdb))
+* **security:** Bump moment to v2.31.0 ([dcf55b7](https://github.com/UN-OCHA/tools-extract-service/commit/dcf55b7c4dd5c7e90b8b72464c44c60e73aefd50))
+
+### [1.5.2](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.1...v1.5.2) (2026-09-08)
 
 
 ### Bug Fixes
