@@ -23,7 +23,6 @@ const puppeteerStealth = require('puppeteer-extra-plugin-stealth');
 const { query, validationResult } = require('express-validator');
 const { Semaphore } = require('await-semaphore');
 const timers = require('node:timers/promises');
-const url = require('url');
 const util = require('util');
 
 const dump = util.inspect;
@@ -215,7 +214,7 @@ app.post('/extract', [
   query('debug', 'Must be one of the following (case insensitive): true, false').optional().toLowerCase().isBoolean(),
 ], (req, res) => {
   // debug
-  log.debug('Request received', { query: url.parse(req.url).query });
+  log.debug('Request received', { query: new URL(req.url).searchParams });
 
   // Ensure a passed url is on the permitted list or includes a substring that
   // is on the permitted list.
