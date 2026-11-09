@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.5](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.3...v1.5.5) (2026-11-09)
+
+
+### Bug Fixes
+
+
+* **security:** Bump puppeteer to the current release. ([acf646a](https://github.com/UN-OCHA/tools-extract-service/commit/acf646ab82bb04969ebcc474b46096d089d19266))
+* **security:** Bump glob to 14.0.4. ([fe19c16](https://github.com/UN-OCHA/tools-extract-service/commit/fe19c1676e8416f155135da4f727e836fd2c6bca))
+* **security:** Bump js-yaml. ([28afef4](https://github.com/UN-OCHA/tools-extract-service/commit/28afef44aa7e563b253e3c3100cc1e9d4f8d7dec))
+
+### [1.5.4](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.3...v1.5.4) (2026-11-09)
+
+
+### Bug Fixes
+
+* **deprecation:** Drop `url.parse()` in favour of `new URL()` as per the docs. ([bde633c](https://github.com/UN-OCHA/tools-extract-service/commit/bde633c847ab81e48e765e1513e84ee48862b90f))
+* **security:** Bump puppeteer to the current release. ([acf646a](https://github.com/UN-OCHA/tools-extract-service/commit/acf646ab82bb04969ebcc474b46096d089d19266))
+* **stupid:** Drop image-size, which we do not actually use. ([d80d266](https://github.com/UN-OCHA/tools-extract-service/commit/d80d266540b93e8b7e18b1a750bcdc928cfa77b9))
+
 ### [1.5.3](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.2...v1.5.3) (2026-10-12)
 
 
