@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.5.5](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.3...v1.5.5) (2026-11-09)
+
+
+### Bug Fixes
+
+
+* **security:** Bump puppeteer to the current release. ([acf646a](https://github.com/UN-OCHA/tools-extract-service/commit/acf646ab82bb04969ebcc474b46096d089d19266))
+* **security:** Bump glob to 14.0.4. ([fe19c16](https://github.com/UN-OCHA/tools-extract-service/commit/fe19c1676e8416f155135da4f727e836fd2c6bca))
+* **security:** Bump js-yaml. ([28afef4](https://github.com/UN-OCHA/tools-extract-service/commit/28afef44aa7e563b253e3c3100cc1e9d4f8d7dec))
+
 ### [1.5.4](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.3...v1.5.4) (2026-11-09)
 
 
