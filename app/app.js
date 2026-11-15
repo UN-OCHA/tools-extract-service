@@ -213,8 +213,12 @@ app.post('/extract', [
   query('delay', 'Must be an integer between 0-10000 inclusive.').optional().isInt({ min: 0, max: 10000 }),
   query('debug', 'Must be one of the following (case insensitive): true, false').optional().toLowerCase().isBoolean(),
 ], (req, res) => {
-  // debug
-  log.debug('Request received', { query: new URL(req.url).searchParams });
+  try {
+    // debug
+    log.debug('Request received', { query: new URL(req.query?.url).searchParams });
+  } catch (err) {
+    log.error(lgParams, err.toString());
+  }
 
   // Ensure a passed url is on the permitted list or includes a substring that
   // is on the permitted list.
