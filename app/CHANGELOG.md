@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### Bug Fixes
+
+* **security:** Build a release with the new NodeJS release. ([Wednesday, November 11, 2026 Security Releases](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases))
+* **bug:** Parse the correct URL param, do not crash on debug. ([85a728c](https://github.com/UN-OCHA/tools-extract-service/commit/85a728cd0462cb02a41354eac41680967b440769))
+
+### [1.5.6](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.3...v1.5.6) (2026-11-16)
+
+
+### Bug Fixes
+* **deprecation:** Drop `url.parse()` in favour of `new URL()` as per the docs. ([bde633c](https://github.com/UN-OCHA/tools-extract-service/commit/bde633c847ab81e48e765e1513e84ee48862b90f))
+* **security:** Bump glob to 14.0.4. ([c12b010](https://github.com/UN-OCHA/tools-extract-service/commit/c12b010db856441195d74ae96c00a7854989fc4b))
+* **security:** Bump js-yaml. ([67a3d6d](https://github.com/UN-OCHA/tools-extract-service/commit/67a3d6d008a95a9b7cd9cf45d55aa74292c850a3))
+* **security:** Bump puppeteer to the current release. ([14124e8](https://github.com/UN-OCHA/tools-extract-service/commit/14124e8bda129376d1c1b354363b2f77de125226))
+* **stupid:** Drop image-size, which we do not actually use. ([d80d266](https://github.com/UN-OCHA/tools-extract-service/commit/d80d266540b93e8b7e18b1a750bcdc928cfa77b9))
+
 ### [1.5.5](https://github.com/UN-OCHA/tools-extract-service/compare/v1.5.3...v1.5.5) (2026-11-09)
 
 
